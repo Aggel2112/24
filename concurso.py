@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 
@@ -19,7 +19,7 @@ class FormData(db.Model):
     career = db.Column(db.String(100), nullable=False)
     poetry_genre = db.Column(db.String(20), nullable=False)
     registration_date = db.Column(db.Date, default=datetime.now(), nullable=False)
-    declamation_date = db.Column(db.Date,nullable=False)
+    declamation_date = db.Column(db.Date)
 
     def __init__(self, carnet, name, address, gender, phone, birthdate, career, poetry_genre):
         self.carnet = carnet
@@ -30,11 +30,6 @@ class FormData(db.Model):
         self.birthdate = birthdate
         self.career = career
         self.poetry_genre = poetry_genre
-
-@app.route('/')
-def index():
-    return redirect('/register')
-    
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -57,16 +52,15 @@ def register():
     if (birthdate_obj + timedelta(days=365*17)).date() > datetime.now().date():
         return jsonify({'error': 'Invalid birthdate'}), 400
 
-
     form_data = FormData(carnet, name, address, gender, phone, birthdate_obj, career, poetry_genre)
     db.session.add(form_data)
     db.session.commit()
     return jsonify({'message': 'Form data registered successfully'}), 201
 
 
-@app.route('/inscripcion', methods=['POST'])
+
+@app.route('/inscription', methods=['POST'])
 def inscription():
-  
     form_data = request.get_json()
     form_data = FormData(carnet=form_data['carnet'], 
                          name=form_data['name'], 
@@ -75,10 +69,9 @@ def inscription():
                          phone=form_data['phone'], 
                          birthdate=datetime.strptime(form_data['birthdate'], '%Y/%m/%d'),
     career=form_data['career'],
-    genre=form_data['genre'],
+    poetry_genre=form_data['poetry_genre'],
     date_inscription=datetime.now())
 
-    return jsonify({'message': 'Inscripción exitosa'})
 
 
 with app.app_context():
